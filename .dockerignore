@@ -1,0 +1,15 @@
+.git
+.github
+.fleet
+node_modules
+dist
+build
+out
+coverage
+.env
+.env.*
+!.env.example
+*.log
+.venv
+__pycache__
+.pytest_cache
