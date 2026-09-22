@@ -56,3 +56,23 @@ Hand-written — FastAPI ships no project generator. Layout follows the
 - `app/routers/` — one module per resource.
 - `app/models.py` — Pydantic schemas (not ORM models).
 - `app/config.py` — env-driven settings, cached.
+
+## Rule: everything under BASE_PATH
+
+The fleet serves this app behind a proxy at `BASE_PATH=/direct/<agent>:<port>`, and the
+prefix is forwarded **unchanged** — it is NOT stripped before it reaches the app. So every
+route, every redirect, every asset URL and the docs/OpenAPI URLs must carry `$BASE_PATH`.
+
+Never hard-code a leading-slash path in a response, a `RedirectResponse`, or a template.
+`RedirectResponse("/items")` and `href="/docs"` point at the proxy's root and 404.
+
+Use this template's own mechanism:
+
+- `app/base_path.py` normalises `$BASE_PATH`; `app/main.py` creates **one**
+  `APIRouter(prefix=BASE_PATH)` and every other router is included into it. Adding a
+  resource means `root.include_router(...)` — never a second prefix.
+- `docs_url`, `redoc_url` and `openapi_url` are set with the prefix on the `FastAPI()`
+  constructor. Keep them that way.
+- Build outgoing URLs from `BASE_PATH` (e.g. `f"{BASE_PATH}/items"`), or from
+  `request.url_for(...)`, which already accounts for the mount.
+- `HEALTH_PATH` in `fleet.conf` stays un-prefixed; the fleet prepends `$BASE_PATH` itself.
