@@ -4,10 +4,6 @@
 #   - CMD names THIS app's entrypoint (app.main:app) rather than the pack's
 #     hardcoded guess, which is only right for a FastAPI repo shaped like this.
 #   - uvicorn comes from requirements.txt, so it is not installed a second time.
-#
-# BASE_PATH is deliberately NOT baked in: the app reads it from the environment
-# at startup (app/base_path.py), so one image serves at the host root in k8s and
-# under /direct/<agent>:<port> when an agent runs it.
 FROM python:3.12-slim AS build
 WORKDIR /app
 ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
